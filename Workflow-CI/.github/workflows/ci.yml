@@ -1,0 +1,26 @@
+name: retrain-iris
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Workflow-CI/MLProject
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: |
+          python -m pip install --upgrade pip
+          pip install mlflow==2.15.1 scikit-learn==1.5.1 pandas==2.2.2 numpy==1.26.4 joblib==1.4.2
+      - run: mlflow run . -e main -P test_size=0.2 -P random_state=42
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mlruns
+          path: Workflow-CI/MLProject/mlruns
+          if-no-files-found: ignore
